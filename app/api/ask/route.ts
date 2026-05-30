@@ -16,42 +16,63 @@ Rules:
 - Write in the voice of someone who has read Didion, Orwell, and Strunk & White and has opinions about all three.`;
 
 export async function POST(req: Request) {
-  const { question, context } = await req.json() as { question: string; context?: string };
+  const apiKey = process.env.ANTHROPIC_API_KEY;
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return new Response("ANTHROPIC_API_KEY is not configured.", { status: 500 });
+  if (!apiKey) {
+    return new Response("ANTHROPIC_API_KEY is not set.", { status: 500 });
   }
 
-  const client = new Anthropic();
+  let question: string;
+  let context: string | undefined;
+
+  try {
+    const body = await req.json();
+    question = body.question;
+    context = body.context;
+  } catch {
+    return new Response("Invalid request body.", { status: 400 });
+  }
+
+  const client = new Anthropic({ apiKey });
 
   const userMessage = context
     ? `The writer is working on the following text:\n\n${context}\n\nTheir question: ${question}`
     : question;
 
-  const stream = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 300,
-    stream: true,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: userMessage }],
-  });
+  try {
+    const stream = await client.messages.create({
+      model: "claude-opus-4-5-20251101",
+      max_tokens: 300,
+      stream: true,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userMessage }],
+    });
 
-  const encoder = new TextEncoder();
-  const readable = new ReadableStream({
-    async start(controller) {
-      for await (const event of stream) {
-        if (
-          event.type === "content_block_delta" &&
-          event.delta.type === "text_delta"
-        ) {
-          controller.enqueue(encoder.encode(event.delta.text));
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of stream) {
+            if (
+              event.type === "content_block_delta" &&
+              event.delta.type === "text_delta"
+            ) {
+              controller.enqueue(encoder.encode(event.delta.text));
+            }
+          }
+          controller.close();
+        } catch (err) {
+          controller.error(err);
         }
-      }
-      controller.close();
-    },
-  });
+      },
+    });
 
-  return new Response(readable, {
-    headers: { "Content-Type": "text/plain; charset=utf-8" },
-  });
+    return new Response(readable, {
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Anthropic API error:", message);
+    return new Response(message, { status: 500 });
+  }
 }

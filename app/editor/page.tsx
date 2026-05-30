@@ -451,7 +451,11 @@ export default function EditorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: q, context: draftText || undefined }),
       });
-      if (!res.ok || !res.body) throw new Error("API error");
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || `HTTP ${res.status}`);
+      }
+      if (!res.body) throw new Error("No response body.");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       while (true) {
@@ -462,11 +466,12 @@ export default function EditorPage() {
           prev.map((c) => (c.id === cardId ? { ...c, answer: c.answer + chunk } : c))
         );
       }
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error.";
       setExtraCards((prev) =>
         prev.map((c) =>
           c.id === cardId
-            ? { ...c, answer: "The Editor is unavailable. Try again in a moment." }
+            ? { ...c, answer: `The Editor is unavailable: ${msg}` }
             : c
         )
       );
