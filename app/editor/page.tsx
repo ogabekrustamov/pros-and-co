@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight, Search, Plus, PenLine, FileText, BookOpen,
   Archive, Clock, Check, X, CornerDownLeft, Loader2,
   ChevronDown, Bold, Italic, Folder,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -318,13 +320,13 @@ function ResearchDeskView({
   );
 }
 
-function LibraryView({ items, onImport }: { items: typeof LIBRARY_ITEMS; onImport: () => void }) {
+function LibraryView({ items, onImport, userName }: { items: typeof LIBRARY_ITEMS; onImport: () => void; userName: string }) {
   return (
     <div className="flex flex-col flex-1 overflow-y-auto px-12 py-10 gap-8">
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <span className="font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase text-[#1a1a1a99]">
-            Personal Library — H. Okabe
+            Personal Library — {userName}
           </span>
           <h2 className="font-['Oswald'] text-5xl leading-none tracking-[-0.96px] uppercase">
             {items.length} Items
@@ -374,6 +376,13 @@ function LibraryView({ items, onImport }: { items: typeof LIBRARY_ITEMS; onImpor
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function EditorPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) router.replace("/");
+  }, [loading, user, router]);
+
   const [section, setSection] = useState<Section>("editor");
   const [suggestion, setSuggestion] = useState<SuggestionState>("active");
   const [tightenDismissed, setTightenDismissed] = useState(false);
@@ -499,6 +508,19 @@ export default function EditorPage() {
 
   const sidebarListLabel =
     section === "library" ? "Library" : section === "research" ? "Sources" : "Open Drafts";
+
+  if (loading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#f7f6f3]">
+        <div className="flex items-center gap-2.5">
+          <div className="size-2 bg-[#2563eb] animate-pulse" />
+          <span className="font-['Oswald'] text-[11px] leading-normal tracking-[2.4px] uppercase text-[#1a1a1a8c]">
+            Loading…
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[#f7f6f3] text-[#1a1a1a] overflow-hidden" onClick={() => setShowToneMenu(false)}>
@@ -637,8 +659,8 @@ export default function EditorPage() {
             style={{ backgroundImage: "url('https://cdn.wonder.so/images/019e78d3-8c57-7249-90b5-12594e7963ad/118a4da713f525b14d3cf23c19f7fc59974984d968b214fe2260b2a1482326d8.jpg')" }}
           />
           <div className="flex min-w-0 flex-col flex-1 gap-px">
-            <span className="font-['Oswald'] text-xs leading-normal tracking-[1.44px] uppercase">H. Okabe</span>
-            <span className="text-[#1a1a1a8c] text-[11px] italic leading-normal">The Annual — Issue 014</span>
+            <span className="font-['Oswald'] text-xs leading-normal tracking-[1.44px] uppercase">{user.name}</span>
+            <span className="text-[#1a1a1a8c] text-[11px] italic leading-normal">{user.email}</span>
           </div>
           <div className="flex h-[22px] items-center border border-[#1a1a1a33] px-2 gap-1.5">
             <div className="size-[5px] bg-[#2563eb] animate-pulse" />
@@ -788,7 +810,7 @@ export default function EditorPage() {
             )}
 
             {section === "library" && (
-              <LibraryView items={LIBRARY_ITEMS} onImport={handleImportToLibrary} />
+              <LibraryView items={LIBRARY_ITEMS} onImport={handleImportToLibrary} userName={user.name} />
             )}
           </div>
 

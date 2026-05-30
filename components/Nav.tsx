@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const links = [
   { label: "The Editor", href: "/editor" },
@@ -14,12 +15,28 @@ const links = [
 
 export default function Nav({
   ctaLabel = "Subscribe",
-  ctaHref = "/pricing",
+  ctaHref,
 }: {
   ctaLabel?: string;
   ctaHref?: string;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, openAuthModal, signOut } = useAuth();
+
+  const isPricingPage = pathname === "/pricing";
+
+  const handleCta = () => {
+    if (user) {
+      router.push("/editor");
+    } else {
+      openAuthModal(isPricingPage ? "signin" : "signup");
+    }
+  };
+
+  const ctaText = user
+    ? "Open Editor"
+    : ctaLabel;
 
   return (
     <nav className="flex h-[72px] shrink-0 items-center border-b px-12 py-0 gap-6 border-b-[#1a1a1a26]">
@@ -62,15 +79,25 @@ export default function Nav({
         })}
       </div>
 
-      <Link
-        href={ctaHref}
-        className="flex h-10 shrink-0 items-center bg-[#1a1a1a] px-[18px] py-0 gap-2 hover:bg-[#2563eb] transition-colors"
-      >
-        <span className="text-[#f7f6f3] font-['Oswald'] text-xs leading-normal tracking-[2.4px] uppercase">
-          {ctaLabel}
-        </span>
-        <ArrowRight size={14} color="#f7f6f3" strokeWidth={2} />
-      </Link>
+      <div className="flex items-center gap-3">
+        {user && (
+          <button
+            onClick={signOut}
+            className="font-['Oswald'] text-xs leading-normal tracking-[2.4px] uppercase text-[#1a1a1a8c] hover:text-[#1a1a1a] transition-colors"
+          >
+            Sign Out
+          </button>
+        )}
+        <button
+          onClick={handleCta}
+          className="flex h-10 shrink-0 items-center bg-[#1a1a1a] px-[18px] py-0 gap-2 hover:bg-[#2563eb] transition-colors"
+        >
+          <span className="text-[#f7f6f3] font-['Oswald'] text-xs leading-normal tracking-[2.4px] uppercase">
+            {ctaText}
+          </span>
+          <ArrowRight size={14} color="#f7f6f3" strokeWidth={2} />
+        </button>
+      </div>
     </nav>
   );
 }
