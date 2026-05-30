@@ -391,7 +391,7 @@ export default function EditorPage() {
   const [activeDraftId, setActiveDraftId] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [askValue, setAskValue] = useState("");
-  const [extraCards, setExtraCards] = useState<Array<{ id: number; question: string; answer: string }>>([]);
+  const [extraCards, setExtraCards] = useState<Array<{ id: number; question: string; answer: string; streaming: boolean }>>([]);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
   const [wordCount, setWordCount] = useState(1248);
   const [tone, setTone] = useState<Tone>("Editorial");
@@ -436,12 +436,45 @@ export default function EditorPage() {
     showToast("Suggestion dismissed.");
   }, [showToast]);
 
-  const handleAsk = (e: React.FormEvent) => {
+  const handleAsk = async (e: React.FormEvent) => {
     e.preventDefault();
     const q = askValue.trim();
     if (!q) return;
-    setExtraCards((prev) => [...prev, { id: Date.now(), question: q, answer: getAIResponse(q) }]);
+    const cardId = Date.now();
+    const draftText = continuationRef.current?.innerText?.trim() ?? "";
+    setExtraCards((prev) => [...prev, { id: cardId, question: q, answer: "", streaming: true }]);
     setAskValue("");
+
+    try {
+      const res = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, context: draftText || undefined }),
+      });
+      if (!res.ok || !res.body) throw new Error("API error");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        setExtraCards((prev) =>
+          prev.map((c) => (c.id === cardId ? { ...c, answer: c.answer + chunk } : c))
+        );
+      }
+    } catch {
+      setExtraCards((prev) =>
+        prev.map((c) =>
+          c.id === cardId
+            ? { ...c, answer: "The Editor is unavailable. Try again in a moment." }
+            : c
+        )
+      );
+    } finally {
+      setExtraCards((prev) =>
+        prev.map((c) => (c.id === cardId ? { ...c, streaming: false } : c))
+      );
+    }
   };
 
   const handleNewDraft = useCallback(() => {
@@ -895,10 +928,21 @@ export default function EditorPage() {
                       <div key={card.id} className="flex flex-col bg-[#f7f6f3] border border-[#1a1a1a26] p-3.5 gap-2">
                         <div className="flex justify-between items-center">
                           <span className="text-[#2563eb] font-['Oswald'] text-[9px] leading-normal tracking-[2.16px] uppercase">Response — The Editor</span>
-                          <span className="text-[#1a1a1a8c] font-['Oswald'] text-[9px] leading-normal tracking-[1.8px] uppercase">Now</span>
+                          {card.streaming ? (
+                            <span className="flex items-center gap-1">
+                              <span className="size-1 rounded-full bg-[#2563eb] animate-bounce" style={{ animationDelay: "0ms" }} />
+                              <span className="size-1 rounded-full bg-[#2563eb] animate-bounce" style={{ animationDelay: "150ms" }} />
+                              <span className="size-1 rounded-full bg-[#2563eb] animate-bounce" style={{ animationDelay: "300ms" }} />
+                            </span>
+                          ) : (
+                            <span className="text-[#1a1a1a8c] font-['Oswald'] text-[9px] leading-normal tracking-[1.8px] uppercase">Now</span>
+                          )}
                         </div>
                         <p className="text-[#1a1a1a8c] text-[11px] italic leading-normal border-l-2 border-l-[#1a1a1a1a] pl-2">{card.question}</p>
-                        <p className="text-[#1a1a1ae6] text-[13px] leading-[1.55]">{card.answer}</p>
+                        <p className="text-[#1a1a1ae6] text-[13px] leading-[1.55]">
+                          {card.answer}
+                          {card.streaming && <span className="inline-block w-0.5 h-3.5 bg-[#2563eb] ml-0.5 animate-pulse align-middle" />}
+                        </p>
                       </div>
                     ))}
                     <div ref={panelBottomRef} />
