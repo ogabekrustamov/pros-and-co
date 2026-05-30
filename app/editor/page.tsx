@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import {
   ArrowRight, Search, Plus, PenLine, FileText, BookOpen,
-  Archive, Clock, Zap, Check, X, CornerDownLeft, Loader2,
+  Archive, Clock, Check, X, CornerDownLeft, Loader2,
   ChevronDown, Bold, Italic, Folder,
 } from "lucide-react";
 
@@ -749,90 +749,16 @@ export default function EditorPage() {
                 </div>
 
                 {/* Writing area */}
-                <div className="flex h-full flex-col pt-14 flex-1 px-20 gap-[22px] overflow-y-auto">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[#2563eb] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">Chapter Three</span>
-                    <div className="size-[3px] bg-[#1a1a1a59] rounded-full" />
-                    <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.2px] uppercase">Draft 7 — 14 March, 11:42</span>
-                  </div>
-
-                  {/* Title — ALL CAPS */}
-                  <div className="flex flex-col gap-0.5">
-                    <h1 className="font-['Oswald'] text-[64px] leading-[0.95] tracking-[-0.96px] uppercase">On The Difficulty</h1>
-                    <h1 className="font-['Oswald'] text-[64px] leading-[0.95] tracking-[-0.96px] uppercase">Of Plain Speech</h1>
-                  </div>
-
-                  {/* Body — lowercase */}
-                  <p className="text-[17px] leading-[1.7]" style={{ textTransform: "lowercase" }}>
-                    The cursor blinks like a metronome and the page, as always,{" "}
-                    {suggestion === "active" && (
-                      <span className="bg-[#2563eb1f] underline decoration-[#2563eb] decoration-dotted underline-offset-[3px] px-[3px] cursor-pointer" style={{ textTransform: "none" }}>refuses</span>
-                    )}
-                    {suggestion === "accepted" && <span className="text-[#2563eb] font-medium" style={{ textTransform: "none" }}>will not yield.</span>}
-                    {suggestion === "dismissed" && "refuses"}
-                    {". "}one writes a sentence, then a second; the second betrays the first.{" "}
-                    <span className="bg-[#2563eb33] px-[3px]">plain speech is the most expensive thing on earth</span>
-                    {" "}— ask anyone who has tried to mean exactly what they said.
-                  </p>
-
-                  <p className="text-[#1a1a1aeb] text-[17px] leading-[1.7]" style={{ textTransform: "lowercase" }}>
-                    prose &amp; co. does not write the sentence for you. it reads over your shoulder, quietly, the way a good editor does — offering a comma here, a sharper verb there, occasionally a silence. the silences, in our experience, are the most useful interventions of all.
-                  </p>
-
-                  <p className="text-[#1a1a1aeb] text-[17px] leading-[1.7]" style={{ textTransform: "lowercase" }}>
-                    there is a particular kind of dishonesty in the tidy paragraph: the kind that resolves a contradiction the writer has not actually worked out. the editor will notice this. it will not, however, fix it for you.{" "}
-                    <span className="text-[#2563eb] font-['Oswald'] text-[11px] leading-normal" style={{ textTransform: "none" }}>[01]</span>
-                  </p>
-
-                  <p className="text-[#1a1a1aeb] text-[17px] leading-[1.7]" style={{ textTransform: "lowercase" }}>
-                    we continue, then, with
-                  </p>
-
-                  {/* Inline suggestion card */}
-                  {suggestion === "active" && (
-                    <div className="flex max-w-[600px] border border-[#2563eb]">
-                      <div className="flex w-1 shrink-0 bg-[#2563eb]" />
-                      <div className="flex flex-col flex-1 p-4 gap-2">
-                        <div className="flex items-center gap-2.5">
-                          <Zap size={11} className="text-[#2563eb]" strokeWidth={2} />
-                          <span className="text-[#2563eb] font-['Oswald'] text-[10px] leading-normal tracking-[2.4px] uppercase">The Editor Suggests</span>
-                          <span className="text-[#1a1a1a8c] text-xs italic leading-normal">replace "refuses"</span>
-                        </div>
-                        <p className="text-[#1a1a1ae6] text-sm leading-[1.55]">
-                          Consider <span className="text-[#2563eb] font-medium">"will not yield."</span> Sharper, less metronomic — and it lets the simile do more of the work.
-                        </p>
-                        <div className="flex items-center mt-1 gap-2">
-                          <button onClick={(e) => { e.stopPropagation(); acceptSuggestion(); }}
-                            className="flex h-[26px] items-center bg-[#2563eb] px-2.5 gap-1.5 hover:bg-[#1d4ed8] transition-colors">
-                            <Check size={10} color="#f7f6f3" strokeWidth={2} />
-                            <span className="text-[#f7f6f3] font-['Oswald'] text-[9px] leading-normal tracking-[1.8px] uppercase">Accept</span>
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); dismissSuggestion(); }}
-                            className="flex h-[26px] items-center border border-[#1a1a1a4d] px-2.5 gap-1.5 hover:bg-[#1a1a1a08] transition-colors">
-                            <X size={10} className="text-[#1a1a1ab3]" strokeWidth={2} />
-                            <span className="text-[#1a1a1ab3] font-['Oswald'] text-[9px] leading-normal tracking-[1.8px] uppercase">Dismiss</span>
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setAskValue('Why suggest "will not yield" over "refuses"?'); setPanelTab("suggestions"); }}
-                            className="ml-1 text-[#1a1a1a8c] font-['Oswald'] text-[9px] leading-normal tracking-[1.8px] uppercase underline hover:text-[#1a1a1a] transition-colors"
-                          >
-                            Why this edit?
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Editable continuation */}
+                <div className="flex h-full flex-col pt-14 flex-1 px-20 gap-[22px] overflow-y-auto" onClick={() => continuationRef.current?.focus()}>
+                  {/* Editable writing area */}
                   <div
                     ref={continuationRef}
                     contentEditable
                     suppressContentEditableWarning
                     onInput={handleContinuationInput}
                     onClick={(e) => e.stopPropagation()}
-                    data-placeholder="continue writing…"
-                    className="min-h-[140px] text-[17px] leading-[1.7] text-[#1a1a1aeb] outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-[#1a1a1a33] empty:before:italic"
-                    style={{ textTransform: "lowercase" }}
+                    data-placeholder="start writing…"
+                    className="min-h-full text-[17px] leading-[1.7] text-[#1a1a1aeb] outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-[#1a1a1a33] empty:before:italic"
                   />
                   <div className="h-24" />
                 </div>
