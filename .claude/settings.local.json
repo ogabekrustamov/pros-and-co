@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(gh auth *)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --eslint --import-alias \"@/*\")",
+      "Bash(cd *)",
+      "Bash(mv \"Page - Prose And Co Editorial.tsx\" \"designs/\")",
+      "Bash(mv \"Page - The Manifesto.tsx\" \"designs/\")",
+      "Bash(mv \"Page - Prose Subscriptions.tsx\" \"designs/\")",
+      "Bash(mv \"Page - The Editor App.tsx\" \"designs/\")",
+      "Bash(mv \"Page - Field Journal.tsx\" \"designs/\")",
+      "Bash(npx next *)"
+    ]
+  }
+}
