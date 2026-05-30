@@ -1,5 +1,6 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import { FadeIn, Stagger, StaggerItem, HeroLine, HoverLift } from "@/components/animations";
 import { ArrowRight, Check, Minus } from "lucide-react";
 
 export const metadata = {
@@ -146,9 +147,9 @@ export default function PricingPage() {
             P. 014 / 064
           </span>
         </div>
-        <div className="flex flex-col font-['Oswald'] font-medium leading-[0.92] uppercase">
-          <span className="text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">Pay For The Hours</span>
-          <span className="text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">You Spend Writing.</span>
+        <div className="flex flex-col font-['Oswald'] font-medium leading-[0.92] uppercase overflow-hidden">
+          <HeroLine delay={0.05}><span className="block text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">Pay For The Hours</span></HeroLine>
+          <HeroLine delay={0.18}><span className="block text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">You Spend Writing.</span></HeroLine>
         </div>
         <div className="flex justify-between items-end mt-2 gap-12">
           <p className="max-w-[640px] text-[#1a1a1ad9] text-[19px] leading-[1.55]">
@@ -181,12 +182,12 @@ export default function PricingPage() {
       </section>
 
       {/* Plan cards */}
-      <div className="flex w-full border-t border-b border-y-[#1a1a1a33]">
+      <Stagger className="flex w-full border-t border-b border-y-[#1a1a1a33]">
         {plans.map((plan) => (
-          <div
-            key={plan.no}
+          <StaggerItem key={plan.no} className="flex-1">
+          <HoverLift
             className={[
-              "relative flex flex-col flex-1 p-10 gap-5 border-l first:border-l-0 border-l-[#1a1a1a33]",
+              "relative flex flex-col h-full p-10 gap-5 border-l first:border-l-0 border-l-[#1a1a1a33]",
               plan.featured ? "bg-[#1a1a1a] text-[#f7f6f3]" : "",
             ].join(" ")}
           >
@@ -283,9 +284,10 @@ export default function PricingPage() {
                 <ArrowRight size={16} strokeWidth={2} />
               </div>
             )}
-          </div>
+          </HoverLift>
+          </StaggerItem>
         ))}
-      </div>
+      </Stagger>
 
       {/* Ledger */}
       <section className="flex w-full flex-col px-12 py-[112px] gap-8">
@@ -363,7 +365,7 @@ export default function PricingPage() {
             in the order they arrive.
           </p>
         </div>
-        <div className="flex flex-col flex-1">
+        <Stagger className="flex flex-col flex-1">
           {[
             {
               n: "01 .",
@@ -391,8 +393,8 @@ export default function PricingPage() {
               a: "Yes, at any time, pro-rated to the day. The Monthly upgrades to The Annual with one click; The Patron is set up over a short call so we can match the masthead.",
             },
           ].map((faq) => (
+            <StaggerItem key={faq.n}>
             <div
-              key={faq.n}
               className="flex border-t py-7 gap-8 border-t-[#1a1a1a26]"
             >
               <span className="w-10 shrink-0 pt-1 text-[#2563eb] font-['Oswald'] text-xs leading-normal tracking-[2.88px] uppercase">
@@ -407,8 +409,9 @@ export default function PricingPage() {
                 </p>
               </div>
             </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       <Footer />

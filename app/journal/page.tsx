@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import { FadeIn, Stagger, StaggerItem, HeroLine, SlideIn, HoverLift } from "@/components/animations";
 import { ArrowRight, Clock } from "lucide-react";
 
 export const metadata = {
@@ -83,7 +84,7 @@ export default function JournalPage() {
 
       {/* Hero */}
       <section className="flex w-full flex-col px-12 py-20 gap-7">
-        <div className="flex w-full justify-between items-center">
+        <FadeIn className="flex w-full justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="flex w-7 h-0.5 bg-[#2563eb]" />
             <span className="font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
@@ -93,10 +94,10 @@ export default function JournalPage() {
           <span className="text-[#1a1a1a99] font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
             P. 028 / 064
           </span>
-        </div>
-        <div className="flex flex-col font-['Oswald'] font-medium leading-[0.92] uppercase">
-          <span className="text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">Notes From</span>
-          <span className="text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">The Margin.</span>
+        </FadeIn>
+        <div className="flex flex-col font-['Oswald'] font-medium leading-[0.92] uppercase overflow-hidden">
+          <HeroLine delay={0.05}><span className="block text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">Notes From</span></HeroLine>
+          <HeroLine delay={0.18}><span className="block text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">The Margin.</span></HeroLine>
         </div>
         <div className="flex justify-between items-end mt-2 gap-12">
           <p className="max-w-[680px] text-[#1a1a1ad9] text-[19px] leading-[1.55]">
@@ -126,13 +127,14 @@ export default function JournalPage() {
 
       {/* Cover story */}
       <section className="flex w-full pt-0 pb-24 px-12 gap-12">
-        <div
-          className="relative h-[640px] flex-col bg-cover bg-no-repeat grayscale flex-1"
-          style={{
-            backgroundImage:
-              "url('https://cdn.wonder.so/images/019e78d3-8c57-7249-90b5-12594e7963ad/261d27901adb56aacc9db5fd3d84815aa122fed6395a6952047801d03166feea.jpg')",
-          }}
-        >
+        <SlideIn direction="left" className="relative h-[640px] flex-1">
+          <div
+            className="absolute inset-0 bg-cover bg-no-repeat grayscale"
+            style={{
+              backgroundImage:
+                "url('https://cdn.wonder.so/images/019e78d3-8c57-7249-90b5-12594e7963ad/261d27901adb56aacc9db5fd3d84815aa122fed6395a6952047801d03166feea.jpg')",
+            }}
+          />
           <div className="absolute flex h-7 items-center left-6 top-6 bg-[#2563eb] px-3.5">
             <span className="text-[#f7f6f3] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">
               Cover Story — Issue 014
@@ -144,8 +146,8 @@ export default function JournalPage() {
               Plate III — The Quiet Hour, Tri-X 400
             </span>
           </div>
-        </div>
-        <div className="flex w-[440px] flex-col shrink-0 pt-2 gap-5">
+        </SlideIn>
+        <FadeIn delay={0.15} className="flex w-[440px] flex-col shrink-0 pt-2 gap-5">
           <div className="flex items-center gap-3">
             <span className="text-[#2563eb] font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
               Essay — The Long Read
@@ -193,7 +195,7 @@ export default function JournalPage() {
             </span>
             <ArrowRight size={16} color="#f7f6f3" strokeWidth={2} />
           </button>
-        </div>
+        </FadeIn>
       </section>
 
       {/* Recent dispatches */}
@@ -223,18 +225,18 @@ export default function JournalPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3">
+        <Stagger className="grid grid-cols-3">
           {articles.map((article, i) => (
-            <div
-              key={article.no}
+            <StaggerItem key={article.no}>
+            <HoverLift
               className={[
-                "flex flex-col p-8 gap-4",
+                "flex flex-col p-8 gap-4 h-full",
                 i >= 3 ? "border-t border-t-[#1a1a1a1a]" : "",
                 i % 3 !== 0 ? "border-l border-l-[#1a1a1a1a]" : "",
               ].join(" ")}
             >
               <div
-                className="w-full h-[200px] bg-cover bg-no-repeat grayscale"
+                className="w-full h-[200px] bg-cover bg-no-repeat grayscale overflow-hidden"
                 style={{ backgroundImage: `url('${article.image}')` }}
               />
               <div className="flex items-center gap-2.5">
@@ -246,7 +248,7 @@ export default function JournalPage() {
                   {article.no}
                 </span>
               </div>
-              <h3 className="font-['Oswald'] text-[26px] leading-[1.05] tracking-[-0.26px] uppercase">
+              <h3 className="font-['Oswald'] text-[26px] leading-[1.05] tracking-[-0.26px] uppercase group-hover:text-[#2563eb] transition-colors">
                 {article.title}
               </h3>
               <p className="text-[#1a1a1abf] text-sm leading-[1.55]">
@@ -263,9 +265,10 @@ export default function JournalPage() {
                   </span>
                 </div>
               </div>
-            </div>
+            </HoverLift>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       {/* Newsletter CTA */}
