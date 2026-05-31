@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
   ReactNode,
 } from "react";
@@ -37,29 +36,18 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
-  const [localUser, setLocalUser] = useState<User | null>(null);
-  const [localLoading, setLocalLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"signin" | "signup">("signin");
   const router = useRouter();
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("prose_user");
-      if (stored) setLocalUser(JSON.parse(stored));
-    } catch {}
-    setLocalLoading(false);
-  }, []);
-
-  const sessionUser: User | null = session?.user
+  const user: User | null = session?.user
     ? {
         email: session.user.email ?? "",
         name: session.user.name ?? session.user.email?.split("@")[0] ?? "",
       }
     : null;
 
-  const user = sessionUser ?? localUser;
-  const loading = status === "loading" || localLoading;
+  const loading = status === "loading";
 
   const openAuthModal = useCallback((mode: "signin" | "signup" = "signin") => {
     setAuthModalMode(mode);
@@ -68,18 +56,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const closeAuthModal = useCallback(() => setAuthModalOpen(false), []);
 
-  const signIn = useCallback(async (email: string, _password: string) => {
-    const u: User = { email, name: email.split("@")[0] };
-    setLocalUser(u);
-    localStorage.setItem("prose_user", JSON.stringify(u));
+  const signIn = useCallback(async (email: string, password: string) => {
+    const result = await nextAuthSignIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+    if (result?.error) throw new Error("Invalid email or password.");
     setAuthModalOpen(false);
     router.push("/editor");
   }, [router]);
 
-  const signUp = useCallback(async (email: string, _password: string, name: string) => {
-    const u: User = { email, name };
-    setLocalUser(u);
-    localStorage.setItem("prose_user", JSON.stringify(u));
+  const signUp = useCallback(async (email: string, password: string, name: string) => {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error ?? "Could not create account.");
+    }
+    const result = await nextAuthSignIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+    if (result?.error) throw new Error("Account created. Please sign in.");
     setAuthModalOpen(false);
     router.push("/editor");
   }, [router]);
@@ -89,14 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(() => {
-    setLocalUser(null);
-    localStorage.removeItem("prose_user");
-    if (session) {
-      nextAuthSignOut({ callbackUrl: "/" });
-    } else {
-      router.push("/");
-    }
-  }, [router, session]);
+    nextAuthSignOut({ callbackUrl: "/" });
+  }, []);
 
   return (
     <AuthContext.Provider
