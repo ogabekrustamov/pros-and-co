@@ -15,25 +15,31 @@ type Section = "editor" | "drafting" | "copy" | "research" | "library";
 type PanelTab = "suggestions" | "research" | "voice" | "history";
 type SuggestionState = "active" | "accepted" | "dismissed";
 type Tone = "Editorial" | "Formal" | "Conversational" | "Sharp" | "Lyrical";
-type DraftStatus = "draft" | "review" | "sent";
 
 interface Draft {
-  id: number;
-  no: string;
+  id: string;
   title: string;
-  words: number;
-  status: DraftStatus;
-  edited: string;
+  content: string;
+  wordCount: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  if (Math.floor(hours / 24) === 1) return "Yesterday";
+  return new Date(dateStr).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+}
 
-const INITIAL_DRAFTS: Draft[] = [
-  { id: 1, no: "No. 03", title: "On The Difficulty Of Plain Speech", words: 1248, status: "draft", edited: "4m ago" },
-  { id: 2, no: "No. 02", title: "A Glossary For The Self-Critical", words: 890, status: "draft", edited: "Yesterday" },
-  { id: 3, no: "No. 01", title: "Against The Tidy Conclusion", words: 2100, status: "review", edited: "12 Mar" },
-  { id: 4, no: "No. 00", title: "Letter From M. Reinhardt", words: 340, status: "sent", edited: "08 Mar" },
-];
+function draftNo(index: number, total: number): string {
+  return `No. ${String(total - 1 - index).padStart(2, "0")}`;
+}
 
 const SOURCES = [
   { id: 1, author: "Strunk & White", title: "The Elements of Style", year: 1959, chapter: "ch. III, § 13", cited: true },
@@ -109,11 +115,11 @@ function DraftingDeskView({
   onNew,
 }: {
   drafts: Draft[];
-  activeDraftId: number;
-  onOpen: (id: number) => void;
+  activeDraftId: string | null;
+  onOpen: (id: string) => void;
   onNew: () => void;
 }) {
-  const statusColor: Record<DraftStatus, string> = {
+  const statusColor: Record<string, string> = {
     draft: "text-[#1a1a1a8c]",
     review: "text-[#2563eb]",
     sent: "text-[#1a1a1a4d]",
@@ -150,19 +156,19 @@ function DraftingDeskView({
             ].join(" ")}
           >
             <span className="text-[#2563eb] font-['Oswald'] text-[11px] leading-normal tracking-[2.4px] uppercase w-14 shrink-0">
-              {draft.no}
+              {draftNo(drafts.indexOf(draft), drafts.length)}
             </span>
             <span className="font-['Oswald'] text-xl leading-none tracking-[-0.2px] uppercase flex-1 group-hover:text-[#2563eb] transition-colors">
               {draft.title}
             </span>
-            <span className={["font-['Oswald'] text-[10px] leading-normal tracking-[2px] uppercase w-20 shrink-0", statusColor[draft.status]].join(" ")}>
+            <span className={["font-['Oswald'] text-[10px] leading-normal tracking-[2px] uppercase w-20 shrink-0", statusColor[draft.status] ?? "text-[#1a1a1a8c]"].join(" ")}>
               {draft.status}
             </span>
             <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2px] uppercase w-24 shrink-0 text-right">
-              {draft.words.toLocaleString()} wds
+              {draft.wordCount.toLocaleString()} wds
             </span>
             <span className="text-[#1a1a1a8c] text-[13px] italic leading-normal w-28 shrink-0 text-right">
-              {draft.edited}
+              {timeAgo(draft.updatedAt)}
             </span>
             <ArrowRight size={14} className="text-[#1a1a1a4d] group-hover:text-[#2563eb] transition-colors shrink-0" strokeWidth={2} />
           </div>
@@ -387,13 +393,14 @@ export default function EditorPage() {
   const [suggestion, setSuggestion] = useState<SuggestionState>("active");
   const [tightenDismissed, setTightenDismissed] = useState(false);
   const [panelTab, setPanelTab] = useState<PanelTab>("suggestions");
-  const [drafts, setDrafts] = useState<Draft[]>(INITIAL_DRAFTS);
-  const [activeDraftId, setActiveDraftId] = useState(1);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+  const [draftsLoading, setDraftsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [askValue, setAskValue] = useState("");
   const [extraCards, setExtraCards] = useState<Array<{ id: number; question: string; answer: string; streaming: boolean }>>([]);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
-  const [wordCount, setWordCount] = useState(1248);
+  const [wordCount, setWordCount] = useState(0);
   const [tone, setTone] = useState<Tone>("Editorial");
   const [showToneMenu, setShowToneMenu] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -402,8 +409,32 @@ export default function EditorPage() {
 
   const continuationRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const panelBottomRef = useRef<HTMLDivElement>(null);
+
+  // Load drafts from DB
+  useEffect(() => {
+    fetch("/api/drafts")
+      .then((r) => r.json())
+      .then((data: Draft[]) => {
+        setDrafts(data);
+        if (data.length > 0) setActiveDraftId(data[0].id);
+        setDraftsLoading(false);
+      })
+      .catch(() => setDraftsLoading(false));
+  }, []);
+
+  // Load content into editor when active draft changes
+  useEffect(() => {
+    if (!activeDraftId || !continuationRef.current) return;
+    const draft = drafts.find((d) => d.id === activeDraftId);
+    if (draft) {
+      continuationRef.current.innerText = draft.content;
+      setWordCount(draft.wordCount);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDraftId]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -418,11 +449,28 @@ export default function EditorPage() {
   }, []);
 
   const handleContinuationInput = useCallback(() => {
+    if (!activeDraftId) return;
     const text = continuationRef.current?.innerText ?? "";
-    const extra = text.trim().split(/\s+/).filter(Boolean).length;
-    setWordCount(1248 + extra);
+    const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).filter(Boolean).length;
+    setWordCount(words);
     triggerSave();
-  }, [triggerSave]);
+
+    clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(async () => {
+      await fetch(`/api/drafts/${activeDraftId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text, wordCount: words }),
+      });
+      setDrafts((prev) =>
+        prev.map((d) =>
+          d.id === activeDraftId
+            ? { ...d, content: text, wordCount: words, updatedAt: new Date().toISOString() }
+            : d
+        )
+      );
+    }, 1500);
+  }, [activeDraftId, triggerSave]);
 
   const acceptSuggestion = useCallback(() => {
     setSuggestion("accepted");
@@ -482,23 +530,21 @@ export default function EditorPage() {
     }
   };
 
-  const handleNewDraft = useCallback(() => {
-    const newDraft: Draft = {
-      id: Date.now(),
-      no: `No. ${String(drafts.length).padStart(2, "0")}`,
-      title: "Untitled Draft",
-      words: 0,
-      status: "draft",
-      edited: "Just now",
-    };
+  const handleNewDraft = useCallback(async () => {
+    const res = await fetch("/api/drafts", { method: "POST" });
+    if (!res.ok) { showToast("Could not create draft."); return; }
+    const newDraft: Draft = await res.json();
     setDrafts((prev) => [newDraft, ...prev]);
     setActiveDraftId(newDraft.id);
     setSection("editor");
-    setTimeout(() => continuationRef.current?.focus(), 100);
+    setTimeout(() => {
+      if (continuationRef.current) continuationRef.current.innerText = "";
+      continuationRef.current?.focus();
+    }, 100);
     showToast("New draft created.");
-  }, [drafts.length, showToast]);
+  }, [showToast]);
 
-  const handleOpenDraft = useCallback((id: number) => {
+  const handleOpenDraft = useCallback((id: string) => {
     setActiveDraftId(id);
     setSection("editor");
   }, []);
@@ -534,10 +580,10 @@ export default function EditorPage() {
     d.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeDraft = drafts.find((d) => d.id === activeDraftId) ?? drafts[0];
+  const activeDraft = drafts.find((d) => d.id === activeDraftId) ?? drafts[0] ?? null;
 
   const BUREAU_NAV: Array<{ id: Section; Icon: typeof PenLine; label: string; count: string }> = [
-    { id: "editor", Icon: PenLine, label: "The Editor", count: `${wordCount.toLocaleString()} wds` },
+    { id: "editor", Icon: PenLine, label: "The Editor", count: draftsLoading ? "…" : `${wordCount.toLocaleString()} wds` },
     { id: "drafting", Icon: FileText, label: "Drafting Desk", count: String(drafts.length) },
     { id: "copy", Icon: BookOpen, label: "Copy Desk", count: String(copyIssues.filter((i) => !i.fixed).length) },
     { id: "research", Icon: Archive, label: "Research Desk", count: String(SOURCES.length) },
@@ -671,7 +717,11 @@ export default function EditorPage() {
                 </button>
               ))}
             {section !== "library" && section !== "research" &&
-              filteredDrafts.map((draft) => (
+              (draftsLoading
+                ? <p className="px-4 py-3 text-[11px] italic text-[#1a1a1a4d]">Loading…</p>
+                : filteredDrafts.length === 0
+                ? <p className="px-4 py-3 text-[11px] italic text-[#1a1a1a4d]">No drafts yet.</p>
+                : filteredDrafts.map((draft, i) => (
                 <button
                   key={draft.id}
                   onClick={() => handleOpenDraft(draft.id)}
@@ -681,13 +731,13 @@ export default function EditorPage() {
                   ].join(" ")}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-[#2563eb] font-['Oswald'] text-[9px] leading-normal tracking-[1.8px] uppercase">{draft.no}</span>
+                    <span className="text-[#2563eb] font-['Oswald'] text-[9px] leading-normal tracking-[1.8px] uppercase">{draftNo(i, filteredDrafts.length)}</span>
                     <div className="flex-1" />
-                    <span className="text-[#1a1a1a8c] text-[10px] italic leading-normal">{draft.edited}</span>
+                    <span className="text-[#1a1a1a8c] text-[10px] italic leading-normal">{timeAgo(draft.updatedAt)}</span>
                   </div>
                   <span className="text-[13px] leading-[1.3]">{draft.title}</span>
                 </button>
-              ))}
+              )))}
           </div>
         </div>
 
@@ -721,7 +771,7 @@ export default function EditorPage() {
               <>
                 <span className="text-[#1a1a1a59] text-[10px]">/</span>
                 <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.2px] uppercase">
-                  {activeDraft?.title ?? "Essay 03"}
+                  {activeDraft?.title ?? "New Draft"}
                 </span>
               </>
             )}
