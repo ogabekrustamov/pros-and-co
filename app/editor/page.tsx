@@ -406,8 +406,11 @@ export default function EditorPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [copyIssues, setCopyIssues] = useState(INITIAL_COPY_ISSUES);
   const [citedIds, setCitedIds] = useState<Set<number>>(new Set());
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState("");
 
   const continuationRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -416,10 +419,11 @@ export default function EditorPage() {
   // Load drafts from DB
   useEffect(() => {
     fetch("/api/drafts")
-      .then((r) => r.json())
-      .then((data: Draft[]) => {
-        setDrafts(data);
-        if (data.length > 0) setActiveDraftId(data[0].id);
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: unknown) => {
+        const list = Array.isArray(data) ? (data as Draft[]) : [];
+        setDrafts(list);
+        if (list.length > 0) setActiveDraftId(list[0].id);
         setDraftsLoading(false);
       })
       .catch(() => setDraftsLoading(false));
@@ -571,6 +575,28 @@ export default function EditorPage() {
   }, [showToast]);
 
   const handleImportToLibrary = () => showToast("Import feature coming soon.");
+
+  const handleTitleClick = useCallback(() => {
+    const draft = drafts.find((d) => d.id === activeDraftId);
+    if (!draft) return;
+    setTitleValue(draft.title);
+    setEditingTitle(true);
+    setTimeout(() => titleInputRef.current?.select(), 30);
+  }, [drafts, activeDraftId]);
+
+  const handleTitleSave = useCallback(async () => {
+    if (!activeDraftId) return;
+    setEditingTitle(false);
+    const trimmed = titleValue.trim() || "Untitled Draft";
+    setDrafts((prev) =>
+      prev.map((d) => (d.id === activeDraftId ? { ...d, title: trimmed } : d))
+    );
+    await fetch(`/api/drafts/${activeDraftId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: trimmed }),
+    });
+  }, [activeDraftId, titleValue]);
 
   useEffect(() => {
     panelBottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -767,12 +793,31 @@ export default function EditorPage() {
             <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.2px] uppercase">
               {section === "editor" ? "Drafting Desk" : BUREAU_NAV.find((n) => n.id === section)?.label}
             </span>
-            {section === "editor" && (
+            {section === "editor" && activeDraft && (
               <>
                 <span className="text-[#1a1a1a59] text-[10px]">/</span>
-                <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.2px] uppercase">
-                  {activeDraft?.title ?? "New Draft"}
-                </span>
+                {editingTitle ? (
+                  <input
+                    ref={titleInputRef}
+                    value={titleValue}
+                    onChange={(e) => setTitleValue(e.target.value)}
+                    onBlur={handleTitleSave}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") { e.preventDefault(); titleInputRef.current?.blur(); }
+                      if (e.key === "Escape") { setEditingTitle(false); }
+                    }}
+                    className="font-['Oswald'] text-[10px] leading-normal tracking-[2.2px] uppercase bg-transparent outline-none border-b border-b-[#2563eb] text-[#1a1a1a] min-w-[120px] max-w-[320px]"
+                    style={{ width: `${Math.max(titleValue.length, 8)}ch` }}
+                  />
+                ) : (
+                  <button
+                    onClick={handleTitleClick}
+                    title="Click to rename"
+                    className="font-['Oswald'] text-[10px] leading-normal tracking-[2.2px] uppercase text-[#1a1a1a8c] hover:text-[#1a1a1a] transition-colors cursor-text"
+                  >
+                    {activeDraft.title}
+                  </button>
+                )}
               </>
             )}
           </div>
