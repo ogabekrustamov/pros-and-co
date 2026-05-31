@@ -9,83 +9,24 @@ import {
 } from "framer-motion";
 import { useEffect, useRef, type ReactNode } from "react";
 
-const EASE = [0.25, 0.1, 0.25, 1] as const;
+// Expo-out — the standard modern easing curve
+const EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const stagger: Variants = {
+// ─── Stagger variants ─────────────────────────────────────────────────────────
+// Parent controls animate state; children inherit via variants.
+const staggerContainer: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.04 } },
+  visible: { transition: { staggerChildren: 0.11, delayChildren: 0.04 } },
 };
 
-// Fades + slides up when element enters viewport
-export function FadeIn({
-  children,
-  delay = 0,
-  className = "",
-}: {
-  children: ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  return (
-    <motion.div
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-64px" }}
-      transition={{ duration: 0.55, ease: EASE, delay }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
+const staggerChild: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EXPO } },
+};
 
-// Staggers direct children in on scroll
-export function Stagger({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <motion.div
-      variants={stagger}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-64px" }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// Item inside a Stagger
-export function StaggerItem({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <motion.div
-      variants={fadeUp}
-      transition={{ duration: 0.55, ease: EASE }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// Animates on page load (not scroll) — for hero headlines
+// ─── HeroLine ─────────────────────────────────────────────────────────────────
+// Clip-reveal for above-the-fold headlines.
+// Animates on MOUNT — never scroll-triggered, so it always fires.
 export function HeroLine({
   children,
   delay = 0,
@@ -96,10 +37,66 @@ export function HeroLine({
   className?: string;
 }) {
   return (
+    <div className={`overflow-hidden ${className}`}>
+      <motion.div
+        initial={{ y: "110%", opacity: 0 }}
+        animate={{ y: "0%", opacity: 1 }}
+        transition={{ duration: 1.05, ease: EXPO, delay }}
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── RevealLine ───────────────────────────────────────────────────────────────
+// Clip-reveal for scroll content. Uses useInView (not whileInView) for reliability.
+// Text rises from behind the overflow-hidden boundary — editorial standard.
+export function RevealLine({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-40px 0px" });
+
+  return (
+    <div ref={ref} className={`overflow-hidden ${className}`}>
+      <motion.div
+        initial={{ y: "110%" }}
+        animate={inView ? { y: "0%" } : { y: "110%" }}
+        transition={{ duration: 0.95, ease: EXPO, delay }}
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── FadeIn ───────────────────────────────────────────────────────────────────
+// Scroll-triggered fade + slide. Uses useInView — reliable for all positions.
+export function FadeIn({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px 0px" });
+
+  return (
     <motion.div
-      initial={{ opacity: 0, y: 48 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: EASE, delay }}
+      ref={ref}
+      initial={{ opacity: 0, y: 32 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
+      transition={{ duration: 0.75, ease: EXPO, delay }}
       className={className}
     >
       {children}
@@ -107,7 +104,50 @@ export function HeroLine({
   );
 }
 
-// Slides in from a direction on scroll
+// ─── Stagger ──────────────────────────────────────────────────────────────────
+// Container that triggers stagger when it enters the viewport.
+// Children (StaggerItem) inherit animation state via Framer Motion variants.
+export function Stagger({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px 0px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      variants={staggerContainer}
+      initial="hidden"
+      animate={inView ? "visible" : "hidden"}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── StaggerItem ──────────────────────────────────────────────────────────────
+// Direct child of Stagger. Uses inherited variants — no ref needed.
+export function StaggerItem({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <motion.div variants={staggerChild} className={className}>
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── SlideIn ──────────────────────────────────────────────────────────────────
+// Directional slide + fade on scroll. Uses useInView.
 export function SlideIn({
   children,
   direction = "up",
@@ -119,18 +159,21 @@ export function SlideIn({
   delay?: number;
   className?: string;
 }) {
-  const map = {
-    up:    { hidden: { opacity: 0, y: 56 },  visible: { opacity: 1, y: 0 } },
-    left:  { hidden: { opacity: 0, x: -48 }, visible: { opacity: 1, x: 0 } },
-    right: { hidden: { opacity: 0, x: 48 },  visible: { opacity: 1, x: 0 } },
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px 0px" });
+
+  const initial = {
+    opacity: 0,
+    x: direction === "left" ? -64 : direction === "right" ? 64 : 0,
+    y: direction === "up" ? 64 : 0,
   };
+
   return (
     <motion.div
-      variants={map[direction]}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-64px" }}
-      transition={{ duration: 0.65, ease: EASE, delay }}
+      ref={ref}
+      initial={initial}
+      animate={inView ? { opacity: 1, x: 0, y: 0 } : initial}
+      transition={{ duration: 0.9, ease: EXPO, delay }}
       className={className}
     >
       {children}
@@ -138,7 +181,8 @@ export function SlideIn({
   );
 }
 
-// Lifts card on hover
+// ─── HoverLift ────────────────────────────────────────────────────────────────
+// Spring-based hover — lifts and subtly scales the element.
 export function HoverLift({
   children,
   className = "",
@@ -148,8 +192,8 @@ export function HoverLift({
 }) {
   return (
     <motion.div
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
+      whileHover={{ y: -6, scale: 1.012 }}
+      transition={{ type: "spring", stiffness: 280, damping: 22 }}
       className={className}
     >
       {children}
@@ -157,7 +201,8 @@ export function HoverLift({
   );
 }
 
-// Counts up to a number when in view
+// ─── CountUp ──────────────────────────────────────────────────────────────────
+// Counts up to a value when scrolled into view. Spring-animated.
 export function CountUp({
   value,
   suffix = "",
@@ -186,28 +231,4 @@ export function CountUp({
   }, [spring, suffix, millions]);
 
   return <span ref={ref}>0</span>;
-}
-
-// Reveals a line with a clipping mask — editorial style
-export function RevealLine({
-  children,
-  delay = 0,
-  className = "",
-}: {
-  children: ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  return (
-    <div className={`overflow-hidden ${className}`}>
-      <motion.div
-        initial={{ y: "102%" }}
-        whileInView={{ y: "0%" }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.65, ease: EASE, delay }}
-      >
-        {children}
-      </motion.div>
-    </div>
-  );
 }
