@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowRight, Search, Plus, PenLine, FileText, BookOpen,
   Archive, Clock, Check, X, CornerDownLeft, Loader2,
-  ChevronDown, Bold, Italic, Folder,
+  ChevronDown, Bold, Italic, Folder, Trash2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -113,19 +113,34 @@ function DraftingDeskView({
   activeDraftId,
   onOpen,
   onNew,
+  onDelete,
 }: {
   drafts: Draft[];
   activeDraftId: string | null;
   onOpen: (id: string) => void;
   onNew: () => void;
+  onDelete: (id: string) => void;
 }) {
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
   const statusColor: Record<string, string> = {
     draft: "text-[#1a1a1a8c]",
     review: "text-[#2563eb]",
     sent: "text-[#1a1a1a4d]",
   };
+
+  function handleDeleteClick(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    if (confirmId === id) {
+      onDelete(id);
+      setConfirmId(null);
+    } else {
+      setConfirmId(id);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 overflow-y-auto px-12 py-10 gap-8">
+    <div className="flex flex-col flex-1 overflow-y-auto px-12 py-10 gap-8" onClick={() => setConfirmId(null)}>
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <span className="font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase text-[#1a1a1a99]">
@@ -149,9 +164,9 @@ function DraftingDeskView({
         {drafts.map((draft) => (
           <div
             key={draft.id}
-            onClick={() => onOpen(draft.id)}
+            onClick={() => { setConfirmId(null); onOpen(draft.id); }}
             className={[
-              "flex items-center border-b border-b-[#1a1a1a1a] px-0 py-5 gap-6 cursor-pointer group hover:bg-[#f7f6f3] transition-colors -mx-1 px-1",
+              "flex items-center border-b border-b-[#1a1a1a1a] py-5 gap-6 cursor-pointer group hover:bg-[#f7f6f3] transition-colors -mx-1 px-1",
               draft.id === activeDraftId ? "bg-[#f7f6f3]" : "",
             ].join(" ")}
           >
@@ -170,7 +185,24 @@ function DraftingDeskView({
             <span className="text-[#1a1a1a8c] text-[13px] italic leading-normal w-28 shrink-0 text-right">
               {timeAgo(draft.updatedAt)}
             </span>
-            <ArrowRight size={14} className="text-[#1a1a1a4d] group-hover:text-[#2563eb] transition-colors shrink-0" strokeWidth={2} />
+            {confirmId === draft.id ? (
+              <button
+                onClick={(e) => handleDeleteClick(e, draft.id)}
+                className="flex items-center gap-1.5 h-7 bg-[#1a1a1a] px-3 shrink-0 hover:bg-red-600 transition-colors"
+              >
+                <span className="font-['Oswald'] text-[9px] leading-normal tracking-[1.8px] uppercase text-[#f7f6f3]">
+                  Confirm
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={(e) => handleDeleteClick(e, draft.id)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-1 hover:text-red-500 text-[#1a1a1a4d]"
+                title="Delete draft"
+              >
+                <Trash2 size={13} strokeWidth={2} />
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -576,6 +608,20 @@ export default function EditorPage() {
 
   const handleImportToLibrary = () => showToast("Import feature coming soon.");
 
+  const handleDeleteDraft = useCallback(async (id: string) => {
+    await fetch(`/api/drafts/${id}`, { method: "DELETE" });
+    setDrafts((prev) => {
+      const next = prev.filter((d) => d.id !== id);
+      if (activeDraftId === id) {
+        setActiveDraftId(next[0]?.id ?? null);
+        if (continuationRef.current) continuationRef.current.innerText = next[0]?.content ?? "";
+        setWordCount(next[0]?.wordCount ?? 0);
+      }
+      return next;
+    });
+    showToast("Draft deleted.");
+  }, [activeDraftId, showToast]);
+
   const handleTitleClick = useCallback(() => {
     const draft = drafts.find((d) => d.id === activeDraftId);
     if (!draft) return;
@@ -926,6 +972,7 @@ export default function EditorPage() {
                 activeDraftId={activeDraftId}
                 onOpen={handleOpenDraft}
                 onNew={handleNewDraft}
+                onDelete={handleDeleteDraft}
               />
             )}
 
