@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowRight, Search, Plus, PenLine, FileText, BookOpen,
   Archive, Clock, Check, X, CornerDownLeft, Loader2,
-  ChevronDown, Bold, Italic, Folder, Trash2,
+  ChevronDown, Bold, Italic, Folder, Trash2, Menu,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -440,6 +440,7 @@ export default function EditorPage() {
   const [citedIds, setCitedIds] = useState<Set<number>>(new Set());
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState("");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const continuationRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -679,7 +680,7 @@ export default function EditorPage() {
   }
 
   return (
-    <div className="flex h-screen bg-[#f7f6f3] text-[#1a1a1a] overflow-hidden" onClick={() => setShowToneMenu(false)}>
+    <div className="flex h-screen bg-[#f7f6f3] text-[#1a1a1a] overflow-hidden" onClick={() => { setShowToneMenu(false); setMobileSidebarOpen(false); }}>
 
       {/* Toast */}
       {toast && (
@@ -689,8 +690,20 @@ export default function EditorPage() {
         </div>
       )}
 
+      {/* Mobile sidebar backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-[#1a1a1a40] md:hidden"
+          onClick={(e) => { e.stopPropagation(); setMobileSidebarOpen(false); }}
+        />
+      )}
+
       {/* ── Sidebar ────────────────────────────────────── */}
-      <aside className="flex w-[260px] h-full flex-col shrink-0 bg-[#f2f0ea] border-r border-r-[#1a1a1a26]">
+      <aside className={[
+        "flex w-[260px] h-full flex-col shrink-0 bg-[#f2f0ea] border-r border-r-[#1a1a1a26]",
+        "fixed md:relative z-40 md:z-auto top-0 left-0 transition-transform duration-200",
+        mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+      ].join(" ")} onClick={(e) => e.stopPropagation()}>
 
         <div className="flex w-full h-16 shrink-0 items-center border-b px-5 gap-2.5 border-b-[#1a1a1a26]">
           <div className="size-2 bg-[#2563eb]" />
@@ -833,9 +846,16 @@ export default function EditorPage() {
       <div className="flex h-full flex-col flex-1 min-w-0">
 
         {/* Toolbar */}
-        <div className="flex w-full h-14 shrink-0 items-center border-b px-7 gap-5 border-b-[#1a1a1a26]">
+        <div className="flex w-full h-14 shrink-0 items-center border-b px-4 md:px-7 gap-3 md:gap-5 border-b-[#1a1a1a26]">
+          {/* Mobile sidebar toggle */}
+          <button
+            className="flex md:hidden items-center justify-center w-8 h-8 shrink-0 hover:bg-[#1a1a1a0a] transition-colors"
+            onClick={(e) => { e.stopPropagation(); setMobileSidebarOpen((v) => !v); }}
+          >
+            <Menu size={16} strokeWidth={2} />
+          </button>
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.2px] uppercase">
               {section === "editor" ? "Drafting Desk" : BUREAU_NAV.find((n) => n.id === section)?.label}
             </span>
@@ -994,9 +1014,9 @@ export default function EditorPage() {
             )}
           </div>
 
-          {/* Right panel — only in editor section */}
+          {/* Right panel — only in editor section, hidden on mobile */}
           {section === "editor" && (
-            <div className="flex w-[340px] h-full flex-col shrink-0 bg-[#f2f0ea] border-l border-l-[#1a1a1a26]">
+            <div className="hidden lg:flex w-[340px] h-full flex-col shrink-0 bg-[#f2f0ea] border-l border-l-[#1a1a1a26]">
               {/* Tabs */}
               <div className="flex h-11 shrink-0 items-center border-b border-b-[#1a1a1a26]">
                 {(["suggestions", "research", "voice", "history"] as PanelTab[]).map((tab) => (

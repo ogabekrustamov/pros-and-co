@@ -31,13 +31,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <Nav />
 
       {/* Hero image */}
-      <SlideIn direction="up" className="relative h-[480px] w-full overflow-hidden">
+      <SlideIn direction="up" className="relative h-[220px] sm:h-[340px] md:h-[480px] w-full overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat grayscale"
           style={{ backgroundImage: `url('${article.image}')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#f7f6f3] via-transparent to-transparent" />
-        <div className="absolute left-12 top-8 flex h-7 items-center bg-[#2563eb] px-3.5">
+        <div className="absolute left-4 md:left-12 top-6 md:top-8 flex h-7 items-center bg-[#2563eb] px-3.5">
           <span className="text-[#f7f6f3] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">
             {article.type} — {article.no}
           </span>
@@ -45,7 +45,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </SlideIn>
 
       {/* Article content */}
-      <FadeIn className="flex flex-col w-full max-w-[760px] mx-auto px-12 pb-24 -mt-12 relative z-10">
+      <FadeIn className="flex flex-col w-full max-w-[760px] mx-auto px-4 md:px-12 pb-24 -mt-12 relative z-10">
         {/* Meta */}
         <div className="flex items-center gap-3 mb-6">
           <span className="text-[#2563eb] font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
@@ -109,11 +109,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </FadeIn>
 
       {/* Prev / Next */}
-      <div className="flex border-t border-t-[#1a1a1a26] mx-12 mb-24">
+      <div className="flex flex-col sm:flex-row border-t border-t-[#1a1a1a26] mx-4 md:mx-12 mb-24">
         {prev ? (
           <Link
             href={`/journal/${prev.slug}`}
-            className="flex flex-1 flex-col gap-2 py-8 pr-8 group hover:bg-[#f0efe9] transition-colors -mx-0 px-0"
+            className="flex flex-1 flex-col gap-2 py-6 sm:py-8 pr-0 sm:pr-8 group hover:bg-[#f0efe9] transition-colors px-0"
           >
             <div className="flex items-center gap-2 text-[#1a1a1a8c]">
               <ArrowLeft size={12} strokeWidth={2} />
@@ -131,7 +131,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         {next ? (
           <Link
             href={`/journal/${next.slug}`}
-            className="flex flex-1 flex-col gap-2 py-8 pl-8 items-end text-right group hover:bg-[#f0efe9] transition-colors"
+            className="flex flex-1 flex-col gap-2 py-6 sm:py-8 pl-0 sm:pl-8 items-start sm:items-end text-left sm:text-right group hover:bg-[#f0efe9] transition-colors border-t sm:border-t-0 border-t-[#1a1a1a26]"
           >
             <div className="flex items-center gap-2 text-[#1a1a1a8c]">
               <span className="font-['Oswald'] text-[10px] leading-normal tracking-[2.2px] uppercase">Next</span>

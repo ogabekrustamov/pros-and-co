@@ -37,14 +37,14 @@ export default function JournalGrid({ articles }: { articles: Article[] }) {
 
   return (
     <>
-      {/* Tabs */}
-      <div className="flex items-center gap-8 px-12 pt-7 pb-0">
+      {/* Tabs — scrollable on mobile */}
+      <div className="flex items-center gap-5 md:gap-8 px-4 md:px-12 pt-7 pb-0 overflow-x-auto scrollbar-none">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
             className={[
-              "font-['Oswald'] text-xs leading-normal tracking-[2.64px] uppercase pb-3 transition-colors border-b-2",
+              "font-['Oswald'] text-xs leading-normal tracking-[2.64px] uppercase pb-3 transition-colors border-b-2 whitespace-nowrap shrink-0",
               activeTab === key
                 ? "text-[#1a1a1a] border-b-[#2563eb]"
                 : "text-[#1a1a1aa6] border-b-transparent hover:text-[#1a1a1a]",
@@ -61,18 +61,19 @@ export default function JournalGrid({ articles }: { articles: Article[] }) {
       </div>
 
       {/* Grid */}
-      <Stagger className="grid grid-cols-3 border-t border-t-[#1a1a1a1a]">
+      <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-t-[#1a1a1a1a]">
         {filtered.map((article, i) => (
           <StaggerItem key={article.slug}>
             <HoverLift
               className={[
-                "flex flex-col p-8 gap-4 h-full border-b border-b-[#1a1a1a1a]",
-                i % 3 !== 0 ? "border-l border-l-[#1a1a1a1a]" : "",
+                "flex flex-col p-6 md:p-8 gap-4 h-full border-b border-b-[#1a1a1a1a]",
+                "sm:[&:nth-child(2n)]:border-l sm:[&:nth-child(2n)]:border-l-[#1a1a1a1a]",
+                "lg:border-l lg:border-l-[#1a1a1a1a] lg:[&:nth-child(3n+1)]:border-l-0",
               ].join(" ")}
             >
               <Link href={`/journal/${article.slug}`} className="group flex flex-col gap-4 flex-1">
                 <div
-                  className="w-full h-[200px] bg-cover bg-center bg-no-repeat grayscale overflow-hidden"
+                  className="w-full h-[180px] md:h-[200px] bg-cover bg-center bg-no-repeat grayscale overflow-hidden"
                   style={{ backgroundImage: `url('${article.image}')` }}
                 />
                 <div className="flex items-center gap-2.5">
@@ -84,7 +85,7 @@ export default function JournalGrid({ articles }: { articles: Article[] }) {
                     {article.no}
                   </span>
                 </div>
-                <h3 className="font-['Oswald'] text-[26px] leading-[1.05] tracking-[-0.26px] uppercase group-hover:text-[#2563eb] transition-colors flex-1">
+                <h3 className="font-['Oswald'] text-[22px] md:text-[26px] leading-[1.05] tracking-[-0.26px] uppercase group-hover:text-[#2563eb] transition-colors flex-1">
                   {article.title}
                 </h3>
                 <p className="text-[#1a1a1abf] text-sm leading-[1.55]">
@@ -110,7 +111,7 @@ export default function JournalGrid({ articles }: { articles: Article[] }) {
       </Stagger>
 
       {filtered.length === 0 && (
-        <div className="flex items-center justify-center py-24 px-12">
+        <div className="flex items-center justify-center py-24 px-4 md:px-12">
           <p className="text-[#1a1a1a8c] text-[15px] italic leading-normal">
             No dispatches in this category yet.
           </p>

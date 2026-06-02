@@ -8,7 +8,7 @@ export default function Footer() {
   const f = tr.footer;
 
   return (
-    <footer className="flex w-full flex-col border-t px-12 py-16 gap-10 border-t-[#1a1a1a33]">
+    <footer className="flex w-full flex-col border-t px-4 md:px-12 py-16 gap-10 border-t-[#1a1a1a33]">
       <div className="flex flex-wrap gap-12">
         <div className="flex w-[300px] flex-col shrink-0 gap-3.5">
           <div className="font-['Oswald'] text-[32px] leading-normal tracking-[5.12px] uppercase">
@@ -57,7 +57,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="flex justify-between items-center pt-7 border-t gap-6 border-t-[#1a1a1a26]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-7 border-t gap-4 sm:gap-6 border-t-[#1a1a1a26]">
         <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">{f.copyright}</span>
         <div className="flex gap-6">
           {[f.privacy, f.terms, "RSS"].map((item) => (
