@@ -12,7 +12,7 @@ export default function ManifestoPage() {
   const m = tr.manifesto;
 
   return (
-    <div className="flex flex-col bg-[#f7f6f3] text-[#1a1a1a]">
+    <div className="flex flex-col bg-[#f7f6f3] text-[#1a1a1a] overflow-x-hidden">
       <Nav />
 
       {/* ── Hero ─────────────────────────────────────── */}
