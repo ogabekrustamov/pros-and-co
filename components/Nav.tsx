@@ -4,25 +4,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
-const links = [
-  { label: "The Editor", href: "/editor" },
-  { label: "Manifesto", href: "/manifesto" },
-  { label: "Library", href: "/library" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Journal", href: "/journal" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Nav({
-  ctaLabel = "Subscribe",
   ctaHref,
 }: {
-  ctaLabel?: string;
   ctaHref?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, openAuthModal, signOut } = useAuth();
+  const { lang, toggleLang, tr } = useLanguage();
 
   const isPricingPage = pathname === "/pricing";
 
@@ -34,19 +26,25 @@ export default function Nav({
     }
   };
 
-  const ctaText = user
-    ? "Open Editor"
-    : ctaLabel;
+  const ctaText = user ? tr.nav.openEditor : tr.nav.subscribe;
+
+  const links = [
+    { label: tr.nav.theEditor, href: "/editor" },
+    { label: tr.nav.manifesto, href: "/manifesto" },
+    { label: tr.nav.library, href: "/library" },
+    { label: tr.nav.pricing, href: "/pricing" },
+    { label: tr.nav.journal, href: "/journal" },
+  ];
 
   return (
     <nav className="flex h-[72px] shrink-0 items-center border-b px-12 py-0 gap-6 border-b-[#1a1a1a26]">
       <div className="flex w-[200px] shrink-0 items-center gap-2.5">
         <div className="size-2 bg-[#2563eb]" />
         <span className="font-['Oswald'] text-[11px] leading-normal tracking-[2.42px] uppercase">
-          Issue 014
+          {tr.nav.issue}
         </span>
         <span className="text-[#1a1a1a99] font-['Oswald'] text-[11px] leading-normal tracking-[2.42px] uppercase">
-          Vol. III
+          {tr.nav.vol}
         </span>
       </div>
 
@@ -80,12 +78,27 @@ export default function Nav({
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Language toggle */}
+        <button
+          onClick={toggleLang}
+          className="flex items-center gap-0 font-['Oswald'] text-[11px] leading-normal tracking-[2px] uppercase"
+          title="Switch language / Tilni o'zgartirish"
+        >
+          <span className={lang === "en" ? "text-[#1a1a1a]" : "text-[#1a1a1a4d] hover:text-[#1a1a1a8c] transition-colors"}>
+            EN
+          </span>
+          <span className="text-[#1a1a1a26] mx-1.5">/</span>
+          <span className={lang === "uz" ? "text-[#2563eb]" : "text-[#1a1a1a4d] hover:text-[#1a1a1a8c] transition-colors"}>
+            UZ
+          </span>
+        </button>
+
         {user && (
           <button
             onClick={signOut}
             className="font-['Oswald'] text-xs leading-normal tracking-[2.4px] uppercase text-[#1a1a1a8c] hover:text-[#1a1a1a] transition-colors"
           >
-            Sign Out
+            {tr.nav.signOut}
           </button>
         )}
         <button

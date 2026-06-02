@@ -1,18 +1,19 @@
+"use client";
+
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import { FadeIn, Stagger, StaggerItem, HeroLine, SlideIn, HoverLift } from "@/components/animations";
+import { FadeIn, HeroLine, SlideIn } from "@/components/animations";
 import { ArrowRight, Clock } from "lucide-react";
 import { articles } from "@/lib/articles";
 import JournalGrid from "./JournalGrid";
-
-export const metadata = {
-  title: "Field Journal — Prose & Co.",
-};
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const coverStory = articles[0];
 
 export default function JournalPage() {
+  const { tr } = useLanguage();
+  const j = tr.journal;
   return (
     <div className="flex flex-col bg-[#f7f6f3] text-[#1a1a1a]">
       <Nav />
@@ -23,7 +24,7 @@ export default function JournalPage() {
           <div className="flex items-center gap-3">
             <div className="flex w-7 h-0.5 bg-[#2563eb]" />
             <span className="font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
-              The Field Journal — Dispatches On Writing
+              {j.label}
             </span>
           </div>
           <span className="text-[#1a1a1a99] font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
@@ -31,19 +32,17 @@ export default function JournalPage() {
           </span>
         </FadeIn>
         <div className="flex flex-col font-['Oswald'] font-medium leading-[0.92] uppercase overflow-hidden">
-          <HeroLine delay={0.05}><span className="block text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">Notes From</span></HeroLine>
-          <HeroLine delay={0.18}><span className="block text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">The Margin.</span></HeroLine>
+          <HeroLine delay={0.05}><span className="block text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">{j.heroLine1}</span></HeroLine>
+          <HeroLine delay={0.18}><span className="block text-[clamp(64px,12vw,180px)] tracking-[-3.6px]">{j.heroLine2}</span></HeroLine>
         </div>
         <FadeIn delay={0.3} className="flex justify-between items-end mt-2 gap-12">
           <p className="max-w-[680px] text-[#1a1a1ad9] text-[19px] leading-[1.55]">
-            A monthly journal of essays on style, the sentence, and the small
-            disasters of working alone. Written by the bureau, edited by M.
-            Reinhardt, set in cold type.
+            {j.tagline}
           </p>
           <div className="flex items-center gap-2 shrink-0">
             <div className="size-[5px] rounded-full bg-[#2563eb] animate-pulse" />
             <span className="text-[#1a1a1a8c] font-['Oswald'] text-[11px] leading-normal tracking-[2.64px] uppercase">
-              Dispatches Open
+              {j.dispatchesOpen}
             </span>
           </div>
         </FadeIn>
@@ -59,7 +58,7 @@ export default function JournalPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/40 to-transparent" />
           <div className="absolute flex h-7 items-center left-6 top-6 bg-[#2563eb] px-3.5">
             <span className="text-[#f7f6f3] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">
-              Cover Story — Issue 014
+              {j.coverStoryBadge}
             </span>
           </div>
           <div className="absolute flex items-center left-6 bottom-5 gap-2.5">
@@ -72,7 +71,7 @@ export default function JournalPage() {
         <FadeIn delay={0.15} className="flex w-[460px] flex-col shrink-0 pt-2 gap-5">
           <div className="flex items-center gap-3">
             <span className="text-[#2563eb] font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
-              {coverStory.type} — The Long Read
+              {coverStory.type} — {j.longRead}
             </span>
             <div className="size-[3px] bg-[#1a1a1a66] rounded-full" />
             <span className="text-[#1a1a1a99] font-['Oswald'] text-[11px] leading-normal tracking-[2.64px] uppercase">
@@ -115,7 +114,7 @@ export default function JournalPage() {
               className="flex w-fit h-[52px] items-center bg-[#2563eb] px-5 gap-2.5 hover:bg-[#1d4ed8] transition-colors"
             >
               <span className="text-[#f7f6f3] font-['Oswald'] text-[13px] leading-normal tracking-[2.86px] uppercase">
-                Read The Essay
+                {j.readTheEssay}
               </span>
               <ArrowRight size={16} color="#f7f6f3" strokeWidth={2} />
             </Link>
@@ -130,23 +129,23 @@ export default function JournalPage() {
             <div className="flex items-center gap-3">
               <div className="flex w-7 h-0.5 bg-[#2563eb]" />
               <span className="font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
-                All Dispatches — Issue 014
+                {j.label}
               </span>
             </div>
             <span className="font-['Oswald'] text-7xl leading-[0.94] tracking-[-1.44px] uppercase">
-              From The Bureau.
+              {j.fromTheBureau}
             </span>
           </div>
           <div className="flex items-center pb-3 gap-6">
             <span className="text-[#1a1a1aa6] text-sm italic leading-normal">
-              Sent the first Monday of every month.
+              {j.sentMonthly}
             </span>
             <Link
               href="/pricing"
               className="flex flex-col group"
             >
               <span className="font-['Oswald'] text-xs leading-normal tracking-[2.64px] uppercase group-hover:text-[#2563eb] transition-colors">
-                Receive By Letter
+                {j.receiveByLetter}
               </span>
               <div className="w-full h-0.5 bg-[#1a1a1a] mt-1 group-hover:bg-[#2563eb] transition-colors" />
             </Link>
@@ -161,28 +160,22 @@ export default function JournalPage() {
         <div className="flex w-[320px] flex-col shrink-0 gap-3.5">
           <div className="flex w-7 h-0.5 bg-[#2563eb]" />
           <span className="font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
-            A Letter, Once A Month
+            {j.receiveSubtitle}
           </span>
           <span className="font-['Oswald'] text-[64px] leading-[0.94] tracking-[-1.28px] uppercase">
-            Receive It By Post.
+            {j.receiveTitle}
           </span>
-          <p className="mt-2 text-[#f7f6f3a6] text-sm italic leading-normal">
-            Or, failing that, by email. The bureau sends one envelope a month —
-            an essay, an interview, a letter from a reader. Never a sale.
-          </p>
+          <p className="mt-2 text-[#f7f6f3a6] text-sm italic leading-normal">{j.receiveBody}</p>
         </div>
         <div className="flex flex-col justify-center flex-1 gap-7">
           <div className="flex items-start gap-5">
             <div className="h-[50px] text-[#2563eb] text-[100px] leading-[0.6]">"</div>
-            <p className="max-w-[640px] text-[#f7f6f3f2] text-[28px] leading-[1.3]">
-              The only newsletter I have not unsubscribed from in two years. It
-              reads like a friend has written, because one has.
-            </p>
+            <p className="max-w-[640px] text-[#f7f6f3f2] text-[28px] leading-[1.3]">{j.testimonial}</p>
           </div>
           <div className="flex items-center pl-[120px] gap-3">
             <div className="flex w-5 h-0.5 bg-[#f7f6f366]" />
             <span className="text-[#f7f6f3b3] font-['Oswald'] text-[11px] leading-normal tracking-[2.64px] uppercase">
-              A. Castellanos — Subscriber Since 2023
+              {j.testimonialAuthor}
             </span>
           </div>
           <div className="flex w-[560px] h-[60px] mt-4 border border-[#f7f6f3]">
@@ -191,13 +184,8 @@ export default function JournalPage() {
                 your@editorial.address
               </span>
             </div>
-            <Link
-              href="/pricing"
-              className="flex items-center bg-[#2563eb] px-6 gap-2.5 hover:bg-[#1d4ed8] transition-colors"
-            >
-              <span className="text-[#f7f6f3] font-['Oswald'] text-xs leading-normal tracking-[2.64px] uppercase">
-                Send The Next Letter
-              </span>
+            <Link href="/pricing" className="flex items-center bg-[#2563eb] px-6 gap-2.5 hover:bg-[#1d4ed8] transition-colors">
+              <span className="text-[#f7f6f3] font-['Oswald'] text-xs leading-normal tracking-[2.64px] uppercase">{j.sendNextLetter}</span>
               <ArrowRight size={14} color="#f7f6f3" strokeWidth={2} />
             </Link>
           </div>

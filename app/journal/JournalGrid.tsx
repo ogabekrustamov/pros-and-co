@@ -5,46 +5,56 @@ import Link from "next/link";
 import { Clock } from "lucide-react";
 import { HoverLift, Stagger, StaggerItem } from "@/components/animations";
 import type { Article } from "@/lib/articles";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const TABS = ["All", "Essays", "Interviews", "Letters", "Notebook"] as const;
-type Tab = (typeof TABS)[number];
+type Tab = "all" | "essays" | "interviews" | "letters" | "notebook";
 
-const TAB_MAP: Record<Tab, Article["type"] | null> = {
-  All: null,
-  Essays: "Essay",
-  Interviews: "Interview",
-  Letters: "Letters",
-  Notebook: "Notebook",
+const TAB_TYPE: Record<Tab, Article["type"] | null> = {
+  all: null,
+  essays: "Essay",
+  interviews: "Interview",
+  letters: "Letters",
+  notebook: "Notebook",
 };
 
 export default function JournalGrid({ articles }: { articles: Article[] }) {
-  const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [activeTab, setActiveTab] = useState<Tab>("all");
+  const { tr } = useLanguage();
+  const j = tr.journal;
+
+  const TABS: { key: Tab; label: string }[] = [
+    { key: "all", label: j.allDispatches },
+    { key: "essays", label: j.essays },
+    { key: "interviews", label: j.interviews },
+    { key: "letters", label: j.letters },
+    { key: "notebook", label: j.notebook },
+  ];
 
   const filtered =
-    TAB_MAP[activeTab] === null
+    TAB_TYPE[activeTab] === null
       ? articles
-      : articles.filter((a) => a.type === TAB_MAP[activeTab]);
+      : articles.filter((a) => a.type === TAB_TYPE[activeTab]);
 
   return (
     <>
       {/* Tabs */}
       <div className="flex items-center gap-8 px-12 pt-7 pb-0">
-        {TABS.map((tab) => (
+        {TABS.map(({ key, label }) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={key}
+            onClick={() => setActiveTab(key)}
             className={[
               "font-['Oswald'] text-xs leading-normal tracking-[2.64px] uppercase pb-3 transition-colors border-b-2",
-              activeTab === tab
+              activeTab === key
                 ? "text-[#1a1a1a] border-b-[#2563eb]"
                 : "text-[#1a1a1aa6] border-b-transparent hover:text-[#1a1a1a]",
             ].join(" ")}
           >
-            {tab}
+            {label}
             <span className="ml-2 text-[#1a1a1a4d] text-[9px]">
-              {tab === "All"
+              {key === "all"
                 ? articles.length
-                : articles.filter((a) => a.type === TAB_MAP[tab]).length}
+                : articles.filter((a) => a.type === TAB_TYPE[key]).length}
             </span>
           </button>
         ))}
