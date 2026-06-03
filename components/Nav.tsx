@@ -22,7 +22,7 @@ export default function Nav({
 
   const handleCta = () => {
     if (user) {
-      router.push("/editor");
+      router.push("/write");
     } else {
       openAuthModal(isPricingPage ? "signin" : "signup");
     }
@@ -32,7 +32,7 @@ export default function Nav({
   const ctaText = user ? tr.nav.openEditor : tr.nav.subscribe;
 
   const links = [
-    { label: tr.nav.theEditor, href: "/editor" },
+    { label: tr.nav.theEditor, href: "/feed" },
     { label: tr.nav.manifesto, href: "/manifesto" },
     { label: tr.nav.library, href: "/library" },
     { label: tr.nav.pricing, href: "/pricing" },
@@ -57,7 +57,7 @@ export default function Nav({
             href="/"
             className="font-['Oswald'] text-[22px] font-medium leading-normal tracking-[3.96px] uppercase"
           >
-            Prose &amp; Co.
+            Folio &amp; Co.
           </Link>
         </div>
 

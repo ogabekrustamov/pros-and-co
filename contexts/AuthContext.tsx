@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (result?.error) throw new Error("Invalid email or password.");
     setAuthModalOpen(false);
-    router.push("/editor");
+    router.push("/feed");
   }, [router]);
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
@@ -84,11 +84,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (result?.error) throw new Error("Account created. Please sign in.");
     setAuthModalOpen(false);
-    router.push("/editor");
+    router.push("/feed");
   }, [router]);
 
   const signInWithGoogle = useCallback(async () => {
-    await nextAuthSignIn("google", { callbackUrl: "/editor" });
+    await nextAuthSignIn("google", { callbackUrl: "/feed" });
   }, []);
 
   const signOut = useCallback(() => {

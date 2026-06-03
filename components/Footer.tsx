@@ -12,15 +12,15 @@ export default function Footer() {
       <div className="flex flex-wrap gap-12">
         <div className="flex w-[300px] flex-col shrink-0 gap-3.5">
           <div className="font-['Oswald'] text-[32px] leading-normal tracking-[5.12px] uppercase">
-            Prose &amp; Co.
+            Folio &amp; Co.
           </div>
           <p className="text-[#1a1a1aa6] text-sm italic leading-[1.55]">{f.tagline}</p>
           <div className="flex flex-col mt-2 gap-0.5">
             <span className="text-[#1a1a1a99] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">
-              Bureau — Bahnhofstrasse 14
+              Digital — Founded In A Reading Chair
             </span>
             <span className="text-[#1a1a1a99] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">
-              8001 Zürich, CH
+              Reading Everywhere
             </span>
           </div>
         </div>
@@ -28,8 +28,13 @@ export default function Footer() {
         <div className="flex flex-1 gap-12 flex-wrap">
           <div className="flex flex-col gap-3">
             <span className="font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">{f.theEditor}</span>
-            {[f.draftingDesk, f.copyDesk, f.researchDesk, f.personalLibrary].map((item) => (
-              <Link key={item} href="/editor" className="text-[#1a1a1abf] text-sm leading-normal hover:text-[#1a1a1a] transition-colors">{item}</Link>
+            {[
+              { label: f.draftingDesk, href: "/write" },
+              { label: f.copyDesk, href: "/feed" },
+              { label: f.researchDesk, href: "/feed" },
+              { label: f.personalLibrary, href: "/library" },
+            ].map((item) => (
+              <Link key={item.label} href={item.href} className="text-[#1a1a1abf] text-sm leading-normal hover:text-[#1a1a1a] transition-colors">{item.label}</Link>
             ))}
           </div>
           <div className="flex flex-col gap-3">
@@ -64,7 +69,7 @@ export default function Footer() {
             <Link key={item} href="/" className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase hover:text-[#1a1a1a] transition-colors">{item}</Link>
           ))}
         </div>
-        <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">ISSN 2754-0917</span>
+        <span className="text-[#1a1a1a8c] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">Every book deserves a conclusion</span>
       </div>
     </footer>
   );

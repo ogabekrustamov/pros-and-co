@@ -9,13 +9,15 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  image     String?
-  password  String?
-  createdAt DateTime @default(now())
-  drafts    Draft[]
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String
+  image       String?
+  password    String?
+  createdAt   DateTime     @default(now())
+  drafts      Draft[]
+  reviews     Review[]
+  reviewLikes ReviewLike[]
 }
 
 model Draft {
@@ -28,4 +30,29 @@ model Draft {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id         String       @id @default(cuid())
+  bookTitle  String
+  bookAuthor String
+  headline   String
+  content    String
+  wordCount  Int          @default(0)
+  readTime   Int          @default(1)
+  genre      String       @default("Fiction")
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likedBy    ReviewLike[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model ReviewLike {
+  reviewId String
+  userId   String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, userId])
 }

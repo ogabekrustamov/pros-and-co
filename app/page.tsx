@@ -54,42 +54,6 @@ export default function EditorialPage() {
               </span>
             </div>
 
-            {/* Editor window mockup — desktop only */}
-            <div className="hidden md:flex absolute inset-0 justify-center items-center z-10">
-              <div className="w-[720px] shadow-[0px_40px_80px_-20px_rgba(0,0,0,0.55),0px_20px_40px_-10px_rgba(0,0,0,0.45)] rotate-[-4deg]">
-                <div className="bg-[#f7f6f3] border border-[#1a1a1a33]">
-                  <div className="flex h-9 items-center bg-[#eceae4] border-b border-b-[#1a1a1a26] px-3.5 gap-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className="size-[11px] bg-[#ff5f57] rounded-full" />
-                      <div className="size-[11px] bg-[#febc2e] rounded-full" />
-                      <div className="size-[11px] bg-[#28c840] rounded-full" />
-                    </div>
-                    <div className="flex h-[22px] items-center bg-[#f7f6f3] border border-[#1a1a1a1a] flex-1 mx-12 gap-2 px-2">
-                      <span className="text-[#1a1a1ab3] font-['Oswald'] text-[10px] tracking-0.5 uppercase">
-                        prose.co / editor / the-writing-machine
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex p-6 gap-4">
-                    <div className="flex flex-col gap-3 flex-1">
-                      <span className="text-[#2563eb] font-['Oswald'] text-[10px] tracking-[2.8px] uppercase">
-                        Chapter Three
-                      </span>
-                      <h2 className="font-['Oswald'] text-3xl leading-none tracking-[-0.34px] uppercase">
-                        On The Difficulty Of Plain Speech
-                      </h2>
-                      <p className="text-[#1a1a1ad9] text-sm leading-[1.65]">
-                        The cursor blinks like a metronome and the page, as always, refuses. One writes a sentence, then a second; the second betrays the first.{" "}
-                        <span className="bg-[#2563eb26] px-0.5">
-                          Plain speech is the most expensive thing on earth
-                        </span>{" "}
-                        — ask anyone who has tried to mean exactly what they said.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </FadeIn>
 
@@ -258,7 +222,7 @@ export default function EditorialPage() {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-4 md:gap-7">
-              {["Continental Rev.", "Field Journal", "Atlas Weekly", "In The Margins"].map((pub, i) => (
+              {["The Book Post", "Five Books", "Literary Hub", "The Millions"].map((pub, i) => (
                 <span key={pub} className="flex items-center gap-4 md:gap-7 text-[#f7f6f3b3] font-['Oswald'] text-xs leading-normal tracking-[2.88px] uppercase">
                   {i > 0 && <span className="inline-block w-px h-3 bg-[#f7f6f340]" />}
                   {pub}
@@ -274,20 +238,20 @@ export default function EditorialPage() {
         <FadeIn className="flex items-center gap-3">
           <div className="flex w-7 h-0.5 bg-[#2563eb]" />
           <span className="font-['Oswald'] text-[11px] leading-normal tracking-[3.08px] uppercase">
-            Become A Subscriber — 14 Days, On The House
+            Join For Free — Your First Reviews On Us
           </span>
         </FadeIn>
 
         <div className="flex flex-col font-['Oswald'] text-[clamp(44px,10vw,140px)] leading-[0.92] tracking-[-2.8px] uppercase overflow-hidden">
-          <HeroLine delay={0}>Write The Thing</HeroLine>
-          <HeroLine delay={0.13}>You&apos;ve Been Avoiding.</HeroLine>
+          <HeroLine delay={0}>Write The Review</HeroLine>
+          <HeroLine delay={0.13}>You&apos;ve Been Thinking About.</HeroLine>
         </div>
 
         <FadeIn delay={0.2} className="flex flex-col md:flex-row justify-between items-start md:items-end mt-4 gap-8 md:gap-12">
           <div className="flex flex-col sm:flex-row w-full md:w-[560px] sm:h-14 border border-[#1a1a1a]">
             <div className="flex items-center flex-1 px-[18px] h-14 sm:h-auto">
               <span className="text-[#1a1a1a8c] text-[15px] italic leading-normal">
-                your@editorial.address
+                your@reading.address
               </span>
             </div>
             <Link
@@ -295,17 +259,17 @@ export default function EditorialPage() {
               className="group flex items-center justify-center sm:justify-start bg-[#2563eb] px-[22px] h-14 sm:h-auto gap-2.5 hover:bg-[#1d4ed8] transition-colors border-t sm:border-t-0 border-t-[#1a1a1a]"
             >
               <span className="text-[#f7f6f3] font-['Oswald'] text-xs leading-normal tracking-[2.64px] uppercase">
-                Begin Issue 014
+                Start Reading
               </span>
               <ArrowRight size={14} color="#f7f6f3" strokeWidth={2} className="group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
           </div>
           <div className="flex max-w-full md:max-w-[360px] flex-col text-left md:text-right gap-1.5">
             <span className="text-[#1a1a1a99] font-['Oswald'] text-[10px] leading-normal tracking-[2.8px] uppercase">
-              No Card — Cancel By Postcard
+              No Card — Your Reviews Stay Yours
             </span>
             <p className="text-[#1a1a1ab3] text-sm italic leading-normal">
-              Or read three free essays first — we are in no rush, and neither is your draft.
+              Or browse three reviews first — the book will still be there when you are ready.
             </p>
           </div>
         </FadeIn>
